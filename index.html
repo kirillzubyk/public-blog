@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Сайт для публикации статей</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>Публикация статей</h1>
+</header>
+<main>
+  <section id="article-form">
+    <h2>Опубликовать статью</h2>
+    <input type="text" id="article-title" placeholder="Заголовок вашей статьи">
+    <textarea id="article-content" placeholder="Содержание статьи"></textarea>
+    <button id="publish-button">Опубликовать</button>
+  </section>
+  <section id="articles">
+    <h2>Список статей</h2>
+    <ul id="article-list">
+      <!-- Здесь будут отображаться статьи -->
+    </ul>
+  </section>
+</main>
+<script src="script.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#article-form {
+    margin-bottom: 20px;
+}
+
+#article-title {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#article-content {
+    width: 100%;
+    height: 200px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#publish-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#articles {
+    /* Стили для отображения статей */
+}
+
+</style>
+<script>
+  const articleTitle = document.getElementById("article-title");
+const articleContent = document.getElementById("article-content");
+const publishButton = document.getElementById("publish-button");
+const articleList = document.getElementById("article-list");
+
+// Загрузка сохраненных статей при загрузке страницы
+window.addEventListener("load", () => {
+    const savedArticles = JSON.parse(localStorage.getItem("articles")) || [];
+    for (const article of savedArticles) {
+        displayArticle(article);
+    }
+});
+
+publishButton.addEventListener("click", () => {
+    const title = articleTitle.value;
+    const content = articleContent.value;
+    if (title.trim() !== "" && content.trim() !== "") {
+        const article = { title, content };
+        displayArticle(article);
+        saveArticle(article); // Сохранение статьи
+        articleTitle.value = "";
+        articleContent.value = "";
+    }
+});
+
+function displayArticle(article) {
+    const articleElement = document.createElement("li");
+    articleElement.innerHTML = `<h3>${article.title}</h3><p>${article.content}</p>`;
+    articleList.appendChild(articleElement);
+}
+
+function saveArticle(article) {
+    const savedArticles = JSON.parse(localStorage.getItem("articles")) || [];
+    savedArticles.push(article);
+    localStorage.setItem("articles", JSON.stringify(savedArticles));
+}
+ //
+// Загрузка статей при загрузке страницы
+window.addEventListener("load", () => {
+  loadArticles();
+});
+
+publishButton.addEventListener("click", () => {
+  const title = articleTitle.value;
+  const content = articleContent.value;
+  if (title.trim() !== "" && content.trim() !== "") {
+    publishArticle(title, content);
+    articleTitle.value = "";
+    articleContent.value = "";
+  }
+});
+
+async function loadArticles() {
+  const response = await fetch('/articles');
+  const articles = await response.json();
+  for (const article of articles) {
+    displayArticle(article);
+  }
+}
+
+async function publishArticle(title, content) {
+  const response = await fetch('/articles', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title, content })
+  });
+
+  if (response.status === 201) {
+    loadArticles();
+  }
+}
+
+function displayArticle(article) {
+  const articleElement = document.createElement("li");
+  articleElement.innerHTML = `<h3>${article.title}</h3><p>${article.content}</p>`;
+  articleList.appendChild(articleElement);
+}
+
+</script>
+</body>
+</html>
